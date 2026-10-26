@@ -1,0 +1,11 @@
+__pycache__/
+build/
+build-*/
+dist/
+*.py[cod]
+*.xlsx
+*.csv
+*.exe
+.env
+.vscode/
+Thumbs.db

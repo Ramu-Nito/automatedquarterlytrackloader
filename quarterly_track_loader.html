@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quarterly Track Loader</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1b3838;
+      --muted: #687b76;
+      --green: #31786f;
+      --coral: #d87555;
+      --paper: #fbfcfa;
+      --line: #dfe8e3;
+      --error: #a53d34;
+      --success: #28695e;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      min-width: 720px;
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      background: linear-gradient(116deg, #12383d 0%, #36776f 56%, #72584b 100%);
+      color: var(--ink);
+      font-family: "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    .panel {
+      width: min(760px, 100%);
+      padding: 42px 44px 36px;
+      border: 1px solid rgba(255, 255, 255, 0.62);
+      border-radius: 24px;
+      background: var(--paper);
+      box-shadow: 0 22px 60px rgba(9, 30, 30, 0.24);
+      animation: arrive 360ms ease-out both;
+    }
+
+    @keyframes arrive {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: 1.2px;
+    }
+
+    h1 {
+      margin: 10px 0 7px;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1.16;
+    }
+
+    .intro {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .fields { margin-top: 31px; }
+    .field + .field { margin-top: 23px; }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #435d57;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: 0.7px;
+    }
+
+    .input-row { display: flex; gap: 10px; min-width: 0; }
+
+    input {
+      width: 100%;
+      min-width: 0;
+      height: 46px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      outline: none;
+      background: #fff;
+      color: var(--ink);
+      font: 13px "Segoe UI", sans-serif;
+      user-select: text;
+      transition: border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(49, 120, 111, 0.12);
+    }
+
+    input:disabled { color: #81908c; background: #f1f5f2; }
+
+    button {
+      min-height: 46px;
+      padding: 0 17px;
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font: 650 13px "Segoe UI", sans-serif;
+      transition: background 140ms ease, color 140ms ease, transform 140ms ease,
+        box-shadow 140ms ease;
+    }
+
+    button:focus-visible, input:focus-visible {
+      outline: 3px solid rgba(49, 120, 111, 0.28);
+      outline-offset: 2px;
+    }
+
+    .browse {
+      flex: 0 0 108px;
+      border: 1px solid #dce8e3;
+      background: #eff5f2;
+      color: #315f59;
+    }
+
+    .browse:hover:not(:disabled) { background: #e4eee9; }
+    .hint { margin: 7px 0 0; color: var(--muted); font-size: 11px; }
+    .rule { height: 1px; margin: 30px 0 19px; background: #e7eeea; }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 22px;
+    }
+
+    #status {
+      overflow-wrap: anywhere;
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    #status[data-phase="error"] { color: var(--error); font-weight: 650; }
+    #status[data-phase="success"] { color: var(--success); font-weight: 650; }
+    #percentage { flex: 0 0 auto; color: var(--green); font-size: 12px; font-weight: 750; }
+
+    .progress-track {
+      position: relative;
+      height: 9px;
+      overflow: hidden;
+      margin-top: 11px;
+      border-radius: 99px;
+      background: #e6efea;
+    }
+
+    #progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #357a70, #66a48d);
+      transition: width 240ms ease;
+    }
+
+    .progress-track[data-indeterminate="true"] #progress-fill {
+      width: 35%;
+      animation: travel 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes travel {
+      from { transform: translateX(-15%); }
+      to { transform: translateX(205%); }
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 25px;
+    }
+
+    .primary {
+      min-width: 214px;
+      color: #fff;
+      background: var(--coral);
+      box-shadow: 0 5px 13px rgba(174, 86, 61, 0.17);
+    }
+
+    .primary:hover:not(:disabled) {
+      background: #c96549;
+      box-shadow: 0 7px 16px rgba(174, 86, 61, 0.22);
+      transform: translateY(-1px);
+    }
+
+    .primary[data-phase="error"] {
+      background: #9f5144;
+      box-shadow: inset 0 2px 4px rgba(65, 24, 19, 0.18);
+    }
+
+    .primary:disabled, .browse:disabled {
+      cursor: default;
+      color: #82918c;
+      background: #e5ece8;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .open-output { color: #315f59; background: #eff5f2; }
+    .open-output:hover { background: #e4eee9; }
+    [hidden] { display: none !important; }
+
+    @media (max-width: 800px) {
+      body { padding: 14px; }
+      .panel { padding: 32px 28px 28px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="panel" aria-labelledby="title">
+    <p class="eyebrow">QUARTERLY TRACK LOADER</p>
+    <h1 id="title">Quarterly Report Generator</h1>
+    <p class="intro">Choose the folder with your prepared track files and where the finished reports should go.</p>
+
+    <section class="fields" aria-label="Folder locations">
+      <div class="field">
+        <label for="source">TRACK FILE FOLDER</label>
+        <div class="input-row">
+          <input id="source" type="text" autocomplete="off" spellcheck="false" placeholder="Usual folder will be used when blank">
+          <button class="browse" id="browse-source" type="button">Browse</button>
+        </div>
+        <p class="hint">Leave blank to use the usual folder.</p>
+      </div>
+
+      <div class="field">
+        <label for="destination">SAVE RESULTS TO</label>
+        <div class="input-row">
+          <input id="destination" type="text" autocomplete="off" spellcheck="false">
+          <button class="browse" id="browse-destination" type="button">Browse</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="rule" role="presentation"></div>
+    <div class="status-row" aria-live="polite">
+      <span id="status" data-phase="ready">Ready to process track files.</span>
+      <span id="eta"></span>
+      <span id="percentage"></span>
+    </div>
+    <div class="progress-track" id="progress-track" role="progressbar" aria-label="Processing progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div id="progress-fill"></div>
+    </div>
+
+    <footer class="actions">
+      <button class="open-output" id="open-output" type="button" hidden>Open output folder</button>
+      <span id="action-spacer"></span>
+      <button class="primary" id="run" type="button">Build quarterly files</button>
+    </footer>
+  </main>
+
+  <script>
+    const source = document.getElementById('source');
+    const destination = document.getElementById('destination');
+    const runButton = document.getElementById('run');
+    const openButton = document.getElementById('open-output');
+    const statusText = document.getElementById('status');
+    const etaText = document.getElementById('eta');
+    const percentage = document.getElementById('percentage');
+    const track = document.getElementById('progress-track');
+    const fill = document.getElementById('progress-fill');
+    const browseButtons = [document.getElementById('browse-source'), document.getElementById('browse-destination')];
+
+    function setBusy(busy) {
+      runButton.disabled = busy;
+      source.disabled = busy;
+      destination.disabled = busy;
+      browseButtons.forEach(button => button.disabled = busy);
+      if (busy) runButton.textContent = 'Working...';
+    }
+
+    window.setJobState = state => {
+      if (state.status !== undefined) statusText.textContent = state.status;
+      if (state.phase !== undefined) {
+        statusText.dataset.phase = state.phase;
+        runButton.dataset.phase = state.phase;
+      }
+      if (state.percent !== undefined) {
+        const value = Math.max(0, Math.min(100, Number(state.percent)));
+        fill.style.width = `${value}%`;
+        track.setAttribute('aria-valuenow', String(value));
+        percentage.textContent = state.phase === 'busy' ? `${Math.round(value)}%` : '';
+      }
+      if (state.eta !== undefined) etaText.textContent = state.eta;
+      if (state.indeterminate !== undefined) track.dataset.indeterminate = String(state.indeterminate);
+      if (state.button_label) runButton.textContent = state.button_label;
+      if (state.show_output !== undefined) openButton.hidden = !state.show_output;
+      setBusy(state.phase === 'busy');
+    };
+
+    async function browse(input, method) {
+      try {
+        const selected = await window.pywebview.api[method](input.value);
+        if (selected) input.value = selected;
+      } catch (error) {
+        window.setJobState({status: `Error: ${error.message || error}`, phase: 'error', button_label: 'Try again'});
+      }
+    }
+
+    document.getElementById('browse-source').addEventListener('click', () => browse(source, 'browse_input'));
+    document.getElementById('browse-destination').addEventListener('click', () => browse(destination, 'browse_output'));
+
+    runButton.addEventListener('click', async () => {
+      openButton.hidden = true;
+      window.setJobState({status: 'Starting...', percent: 0, indeterminate: true, phase: 'busy'});
+      try {
+        const result = await window.pywebview.api.start_job(source.value, destination.value);
+        if (!result.started) {
+          window.setJobState({status: `Error: ${result.message}`, phase: 'error', indeterminate: false, button_label: 'Try again'});
+        }
+      } catch (error) {
+        window.setJobState({status: `Error: ${error.message || error}`, phase: 'error', indeterminate: false, button_label: 'Try again'});
+      }
+    });
+
+    openButton.addEventListener('click', async () => {
+      await window.pywebview.api.open_output_folder();
+    });
+
+    window.addEventListener('pywebviewready', async () => {
+      const defaults = await window.pywebview.api.get_defaults();
+      destination.value = defaults.output_dir;
+    });
+  </script>
+</body>
+</html>
